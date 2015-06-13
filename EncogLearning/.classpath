@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry excluding="edu/ucf/eplex/encoglearning/NormalizeTest.java|edu/ucf/eplex/encoglearning/mouseenv/MouseChromosome.java|edu/ucf/eplex/encoglearning/mouseenv/MouseGA.java" kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/test/resources"/>
