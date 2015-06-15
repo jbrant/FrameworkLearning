@@ -25,7 +25,9 @@ import org.encog.util.simple.EncogUtility;
 public class AbaloneNNTraining {
 
 	private final static String DATA_FILENAME = "src/main/resources/Abalone/abalone.data";
+	private final static String EGA_FILENAME = "src/main/resources/Abalone/abalone.ega";
 	private final static char DATA_FILE_DELIMITER = ',';
+	private static EncogAnalyst ANALYST = new EncogAnalyst();
 
 	private static File normalizeInputFile() {
 
@@ -38,24 +40,34 @@ public class AbaloneNNTraining {
 
 		// Only normalize the file if it hasn't already been done
 		if (normalizedFile.exists() == false) {
-			// Instantiate Encog analyst
-			EncogAnalyst analyst = new EncogAnalyst();
 
 			// Create the wizard and analyze the file
-			AnalystWizard wizard = new AnalystWizard(analyst);
+			AnalystWizard wizard = new AnalystWizard(ANALYST);
 			wizard.wizard(inputFile, false, AnalystFileFormat.DECPNT_COMMA);
 
 			// Instantiate normalizer
 			final AnalystNormalizeCSV norm = new AnalystNormalizeCSV();
 
 			// Analyze the source file
-			norm.analyze(inputFile, false, CSVFormat.ENGLISH, analyst);
+			norm.analyze(inputFile, false, CSVFormat.ENGLISH, ANALYST);
+
+			// Set input headings
+			norm.setInputHeadings(new String[] { "Sex", "Shell Length",
+					"Shell Diameter", "Shell Height", "Total Abalone Weight",
+					"Shucked Weight", "Viscera Weight", "Shell Weight", "Rings" });
 
 			// Ensure that there are no headers in the output
-			norm.setProduceOutputHeaders(false);
+			norm.setProduceOutputHeaders(true);
 
 			// Normalize to the output file
 			norm.normalize(normalizedFile);
+			
+			// Save the ega file
+			ANALYST.save(EGA_FILENAME);
+		}
+		// Otherwise, load the already written EGA file
+		else {
+			ANALYST.load(EGA_FILENAME);
 		}
 
 		return normalizedFile;
@@ -140,7 +152,7 @@ public class AbaloneNNTraining {
 			File normalizedFile = normalizeInputFile();
 
 			MLDataSet preparedDataset = EncogUtility.loadCSV2Memory(
-					normalizedFile.toString(), 8, 1, false, new CSVFormat('.',
+					normalizedFile.toString(), 8, 1, true, new CSVFormat('.',
 							','), false);
 
 			// Build the neural network
@@ -171,6 +183,20 @@ public class AbaloneNNTraining {
 				// Compute the output from the trained network
 				MLData testOutput = network.compute(pair.getInput());
 
+								
+				
+				System.out.println(ANALYST.getScript().getNormalize()
+						.getNormalizedFields().get(6)
+						.deNormalize(pair.getInput().getData(7)));
+				System.out.println(ANALYST.getScript().getNormalize()
+						.getNormalizedFields().get(8)
+						.deNormalize(pair.getIdeal().getData(0)));
+				System.out.println(ANALYST.getScript().getNormalize()
+						.getNormalizedFields().get(8)
+						.deNormalize(testOutput.getData(0)));
+
+				
+				
 				// Print results
 				System.out.println(String.format("Actual: %f, Ideal: %f",
 						testOutput.getData(0), pair.getIdeal().getData(0)));
